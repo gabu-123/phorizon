@@ -1,8 +1,18 @@
+'use client';
+
 import { Lock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TransferForm } from '@/components/dashboard/payments/transfer-form';
+import { useAccounts } from '@/contexts/accounts-context';
+import type { Transaction } from '@/lib/mock-data';
 
 export default function PaymentsPage() {
+  const { accounts, handleNewTransaction } = useAccounts();
+
+  const handleNewTransfer = (newTransaction: Transaction, fromAccountNumber: string) => {
+    handleNewTransaction(newTransaction, fromAccountNumber);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -25,7 +35,7 @@ export default function PaymentsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TransferForm />
+          <TransferForm onTransferSuccess={handleNewTransfer} accounts={accounts} />
         </CardContent>
       </Card>
     </div>
