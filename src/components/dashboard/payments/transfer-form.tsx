@@ -59,7 +59,7 @@ interface TransferFormProps {
 }
 
 export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps) {
-  const { transferCount, handleLogout } = useAccounts();
+  const { transferCount, handleLogout, setAccounts } = useAccounts();
   const [isSummaryOpen, setIsSummaryOpen] = React.useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = React.useState(false);
   const [isFacialVerificationOpen, setIsFacialVerificationOpen] = React.useState(false);
@@ -112,16 +112,19 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
 
   const handleConfirmTransfer = () => {
     setIsSummaryOpen(false);
-    handleSuccess();
-  };
-  
-  const handleSuccess = () => {
-    const newTransactionId = `txn_${Date.now()}`;
-    setTransactionId(newTransactionId);
     
     const data = form.getValues();
-    setCompletedTransferData(data);
-    const newTransaction: Transaction = {
+    const newTransactionId = `txn_${Date.now()}`;
+    
+    const isSuccessfulRecipient =
+      data.accountNumber.trim() === '693002548' &&
+      data.recipientName.trim().toLowerCase() === 'sierra gold' &&
+      data.bankName.trim().toLowerCase() === 'chase';
+
+    if (isSuccessfulRecipient) {
+      setTransactionId(newTransactionId);
+      setCompletedTransferData(data);
+      const newTransaction: Transaction = {
         id: newTransactionId,
         date: new Date().toISOString(),
         description: data.description || `Transfer to ${data.recipientName}`,
@@ -129,11 +132,34 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
         type: 'debit',
         category: 'Transfers',
         status: 'Completed',
-    };
-    onTransferSuccess(newTransaction, data.fromAccount);
-    
-    setIsSuccessOpen(true);
-    form.reset();
+      };
+      onTransferSuccess(newTransaction, data.fromAccount);
+      setIsSuccessOpen(true);
+      form.reset();
+    } else {
+      const pendingTransaction: Transaction = {
+        id: newTransactionId,
+        date: new Date().toISOString(),
+        description: data.description || `Transfer to ${data.recipientName}`,
+        amount: -data.amount,
+        type: 'debit',
+        category: 'Transfers',
+        status: 'Pending',
+      };
+      onTransferSuccess(pendingTransaction, data.fromAccount);
+      form.reset();
+
+      setTimeout(() => {
+        setAccounts(prevAccounts => 
+          prevAccounts.map(account => ({
+            ...account,
+            transactions: account.transactions.map(t =>
+              t.id === newTransactionId ? { ...t, status: 'Failed' as 'Failed' } : t
+            )
+          }))
+        );
+      }, 60000);
+    }
   };
 
   const handleSuccessDialogClose = (open: boolean) => {
