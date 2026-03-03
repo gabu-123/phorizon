@@ -151,12 +151,21 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
 
       setTimeout(() => {
         setAccounts(prevAccounts => 
-          prevAccounts.map(account => ({
-            ...account,
-            transactions: account.transactions.map(t =>
-              t.id === newTransactionId ? { ...t, status: 'Failed' as 'Failed' } : t
-            )
-          }))
+          prevAccounts.map(account => {
+            if (account.accountNumber === data.fromAccount) {
+              const transactionToFail = account.transactions.find(t => t.id === newTransactionId);
+              if (transactionToFail) {
+                return {
+                  ...account,
+                  balance: account.balance - transactionToFail.amount, // Revert balance change
+                  transactions: account.transactions.map(t =>
+                    t.id === newTransactionId ? { ...t, status: 'Failed' as 'Failed' } : t
+                  ),
+                };
+              }
+            }
+            return account;
+          })
         );
       }, 60000);
     }
