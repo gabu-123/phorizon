@@ -59,7 +59,7 @@ interface TransferFormProps {
 }
 
 export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps) {
-  const { transferCount, handleLogout, setAccounts } = useAccounts();
+  const { transferCount, handleLockout, setAccounts } = useAccounts();
   const [isSummaryOpen, setIsSummaryOpen] = React.useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = React.useState(false);
   const [isFacialVerificationOpen, setIsFacialVerificationOpen] = React.useState(false);
@@ -442,7 +442,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
         isOpen={isFacialVerificationOpen}
         onOpenChange={setIsFacialVerificationOpen}
         onSuccess={handleVerificationSuccess}
-        onFailure={handleLogout}
+        onFailure={handleLockout}
       />
     </>
   );

@@ -36,16 +36,19 @@ export default function LoginPage() {
   const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [otp, setOtp] = useState('');
   const { toast } = useToast();
+  const [correctPassword, setCorrectPassword] = useState('Jolie50pass50.');
 
   useEffect(() => {
-    // Clear persisted data when the user lands on the login page
-    // to ensure a clean state for the new session.
-    localStorage.removeItem('horizon-bank-data');
+    // Check if a new password has been set due to a security lockout.
+    const newPassword = localStorage.getItem('horizon-bank-password');
+    if (newPassword) {
+      setCorrectPassword(newPassword);
+    }
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'angelinajolie50@outlook.com' && password === 'Jolie50pass50.') {
+    if (email === 'angelinajolie50@outlook.com' && password === correctPassword) {
       setIsOtpOpen(true);
     } else {
       toast({
