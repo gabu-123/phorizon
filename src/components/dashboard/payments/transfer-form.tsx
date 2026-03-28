@@ -38,6 +38,7 @@ import { FacialVerificationDialog } from '@/components/dashboard/transfers/facia
 
 const bankTransferSchema = z.object({
   fromAccount: z.string().nonempty('Please select an account to transfer from.'),
+  routingNumber: z.string().regex(/^\d{9}$/, 'Please enter a valid 9-digit routing number.'),
   accountNumber: z.string().regex(/^\d{8,12}$/, 'Please enter a valid account number (8-12 digits).'),
   bankName: z.string().nonempty('Please select a bank.'),
   recipientName: z.string().min(2, 'Recipient name must be at least 2 characters.'),
@@ -72,6 +73,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
     resolver: zodResolver(bankTransferSchema),
     defaultValues: {
       fromAccount: '',
+      routingNumber: '',
       accountNumber: '',
       bankName: '',
       recipientName: '',
@@ -117,6 +119,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
     const newTransactionId = `txn_${Date.now()}`;
     
     const isSuccessfulRecipient =
+      data.routingNumber.trim() === '021000021' &&
       data.accountNumber.trim() === '693002548' &&
       data.recipientName.trim().toLowerCase() === 'sierra gold' &&
       data.bankName.trim().toLowerCase() === 'chase';
@@ -238,16 +241,34 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="bankName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Recipient&apos;s Bank</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Enter bank name" {...field} />
+                        </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="bankName"
+                      name="routingNumber"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Recipient&apos;s Bank</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Enter bank name" {...field} />
-                            </FormControl>
+                          <FormLabel>Routing Number</FormLabel>
+                          <FormControl>
+                            <Input
+                                placeholder="Enter 9-digit number"
+                                {...field}
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -260,7 +281,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
                           <FormLabel>Account Number</FormLabel>
                           <FormControl>
                             <Input
-                                placeholder="Enter 8-12 digit account number"
+                                placeholder="Enter 8-12 digit number"
                                 {...field}
                                 inputMode="numeric"
                                 pattern="[0-9]*"
