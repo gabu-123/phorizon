@@ -3,7 +3,6 @@ import { ProfileForm } from "@/components/dashboard/settings/profile-form"
 import { AppearanceForm } from "@/components/dashboard/settings/appearance-form"
 import { NotificationsForm } from "@/components/dashboard/settings/notifications-form"
 import { PasswordForm } from "@/components/dashboard/settings/password-form"
-import { SecuritySettings } from "@/components/dashboard/settings/security-settings"
 
 export default function SettingsPage() {
   return (
@@ -34,16 +33,6 @@ export default function SettingsPage() {
                 <PasswordForm />
             </div>
       </div>
-      <Separator />
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="md:col-span-1">
-                <h4 className="text-md font-medium">Security</h4>
-                <p className="text-sm text-muted-foreground">Manage security features for your account.</p>
-            </div>
-            <div className="md:col-span-2">
-                <SecuritySettings />
-            </div>
-        </div>
       <Separator />
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <div className="md:col-span-1">

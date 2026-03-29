@@ -10,7 +10,6 @@ interface AccountsContextType {
   setAccounts: Dispatch<SetStateAction<Account[]>>;
   handleNewTransaction: (newTransaction: Transaction, fromAccountNumber: string) => void;
   transferCount: number;
-  resetTransferCount: () => void;
   handleLogout: () => void;
   handleLockout: () => void;
 }
@@ -83,16 +82,11 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
     setTransferCount(prevCount => prevCount + 1);
   };
 
-  const resetTransferCount = () => {
-    setTransferCount(0);
-  };
-
   const value = {
     accounts,
     setAccounts,
     handleNewTransaction,
     transferCount,
-    resetTransferCount,
     handleLogout,
     handleLockout
   };
