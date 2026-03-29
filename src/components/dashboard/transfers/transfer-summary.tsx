@@ -16,7 +16,6 @@ import { format } from 'date-fns';
 type TransferData = {
     fromAccount: string;
     routingNumber: string;
-    accountNumber: string;
     bankName: string;
     recipientName: string;
     amount: number;
@@ -58,7 +57,6 @@ export function TransferSummary({ isOpen, onOpenChange, onConfirm, data, fromAcc
                     <p className="font-medium">{data.recipientName}</p>
                     <p className="text-sm text-muted-foreground">{data.bankName}</p>
                     {data.routingNumber && <p className="text-sm text-muted-foreground">Routing: ...{data.routingNumber.slice(-4)}</p>}
-                    {data.accountNumber && <p className="text-sm text-muted-foreground">Account: ...{data.accountNumber.slice(-4)}</p>}
                 </div>
             </div>
             
