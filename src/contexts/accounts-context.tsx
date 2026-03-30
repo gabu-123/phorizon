@@ -8,7 +8,7 @@ import type { Account, Transaction } from '@/lib/mock-data';
 interface AccountsContextType {
   accounts: Account[];
   setAccounts: Dispatch<SetStateAction<Account[]>>;
-  handleNewTransaction: (newTransaction: Transaction, targetAccountNumber: string) => void;
+  handleNewTransaction: (newTransaction: Transaction, fromAccountNumber: string) => void;
   transferCount: number;
   handleLogout: () => void;
   handleLockout: () => void;
@@ -19,6 +19,7 @@ const AccountsContext = createContext<AccountsContextType | undefined>(undefined
 const LOCAL_STORAGE_KEY = 'horizon-bank-data';
 
 type StoredData = {
+  version?: number;
   accounts: Account[];
   transferCount: number;
 };
@@ -35,11 +36,22 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
       const storedDataString = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedDataString) {
         const storedData: StoredData = JSON.parse(storedDataString);
-        setAccounts(storedData.accounts);
-        setTransferCount(storedData.transferCount || 0);
+        // If stored version is old or missing, use fresh mock data
+        if (!storedData.version || storedData.version < mockUserData.version) {
+          setAccounts(mockUserData.accounts);
+          setTransferCount(0); // Reset transfer count with new data
+        } else {
+          // Data is up-to-date, use it from storage
+          setAccounts(storedData.accounts);
+          setTransferCount(storedData.transferCount || 0);
+        }
       }
+      // If no stored data, the initial state from useState (mockUserData) is already set and correct.
     } catch (error) {
-      console.error("Failed to load data from localStorage", error);
+      console.error("Failed to load or parse data from localStorage, using fresh mock data.", error);
+      // If anything fails, revert to fresh mock data
+      setAccounts(mockUserData.accounts);
+      setTransferCount(0);
     }
     setIsInitialized(true);
   }, []);
@@ -48,7 +60,11 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isInitialized) {
       try {
-        const dataToStore: StoredData = { accounts, transferCount };
+        const dataToStore: StoredData = { 
+          version: mockUserData.version,
+          accounts, 
+          transferCount 
+        };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToStore));
       } catch (error) {
         console.error("Failed to save data to localStorage", error);
