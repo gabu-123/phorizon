@@ -65,8 +65,18 @@ export const mockUserData: UserData = {
       id: 'acc_chk_1',
       type: 'Checking',
       accountNumber: '**** **** **** 1234',
-      balance: 25215567.87,
-      transactions: [],
+      balance: 35215567.87,
+      transactions: [
+        {
+          id: 'txn_dep_1',
+          date: '2026-03-30',
+          description: 'from AGT',
+          amount: 10000000,
+          type: 'credit',
+          category: 'Deposit',
+          status: 'Completed',
+        },
+      ],
       cards: [
         {
           id: 'card_1',
