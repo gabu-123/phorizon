@@ -60,7 +60,7 @@ export default function LoginPage() {
   };
 
   const handleOtpVerify = () => {
-    if (otp === '082361') {
+    if (otp === '942167') {
       toast({
         title: 'Sign In Successful',
         description: 'Welcome back!',
