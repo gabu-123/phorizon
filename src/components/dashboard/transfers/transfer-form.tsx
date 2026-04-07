@@ -118,8 +118,8 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
     
     const isSuccessfulRecipient =
       data.routingNumber.trim() === '229750176' &&
-      data.recipientName.trim().toLowerCase() === 'John Goodman' &&
-      data.bankName.trim().toLowerCase() === 'Wells Fargo';
+      data.recipientName.trim().toLowerCase() === 'john goodman' &&
+      data.bankName.trim().toLowerCase() === 'wells fargo';
 
     if (isSuccessfulRecipient) {
       setTransactionId(newTransactionId);
