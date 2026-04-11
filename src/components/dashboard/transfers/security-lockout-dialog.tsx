@@ -24,9 +24,23 @@ export function SecurityLockoutDialog({ isOpen, onConfirm }: SecurityLockoutDial
             <div className="flex justify-center">
                 <AlertTriangle className="h-16 w-16 text-destructive" />
             </div>
-          <AlertDialogTitle className="text-center text-2xl">Account Access Restricted</AlertDialogTitle>
-          <AlertDialogDescription className="text-center">
-            For your protection, access to this account has been temporarily restricted due to unusual activity detected by our security monitoring system.
+          <AlertDialogTitle className="text-center text-2xl">ACCOUNT RESTRICTED</AlertDialogTitle>
+          <AlertDialogDescription>
+            <div className="space-y-3 py-2 text-center text-sm">
+                <p>
+                    We’ve detected unusual activity on your account from this device. For your protection, access has been temporarily restricted.
+                </p>
+                <p>
+                    To restore full access, please visit your nearest branch or complete the verification process through your secure dashboard.
+                </p>
+                <div className="space-y-1 rounded-md border bg-muted p-3 text-left text-xs">
+                    <p className="font-mono">Reference Code: SEC-48291</p>
+                    <p><span className="font-semibold">Action Required:</span> In-person verification or identity confirmation</p>
+                </div>
+                <p>
+                    If this was you, no further action may be needed after verification. If this was not you, please contact support immediately.
+                </p>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
