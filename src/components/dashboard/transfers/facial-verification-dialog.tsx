@@ -7,33 +7,27 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Camera, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 interface FacialVerificationDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSuccess: () => void;
   onFailure: () => void;
 }
 
 export function FacialVerificationDialog({
   isOpen,
   onOpenChange,
-  onSuccess,
   onFailure,
 }: FacialVerificationDialogProps) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
-  const [isVerifying, setIsVerifying] = React.useState(false);
-  const { toast } = useToast();
 
   React.useEffect(() => {
     let stream: MediaStream | null = null;
+    let timeoutId: NodeJS.Timeout;
     
     const getCameraPermission = async () => {
       if (!isOpen) return;
@@ -43,14 +37,17 @@ export function FacialVerificationDialog({
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+
+        // Auto-fail after 3 seconds
+        timeoutId = setTimeout(() => {
+            onFailure();
+        }, 3000);
+
       } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings.',
-        });
+        // Trigger failure immediately if camera access is denied
+        onFailure();
       }
     };
 
@@ -60,26 +57,15 @@ export function FacialVerificationDialog({
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+       if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [isOpen, toast]);
-
-  const handleVerify = () => {
-    setIsVerifying(true);
-    // Simulate a facial verification API call that always fails
-    setTimeout(() => {
-      toast({
-        variant: 'destructive',
-        title: 'Verification Failed',
-        description: 'We could not verify your identity. For security, you will be logged out.',
-      });
-      onFailure(); // Log out immediately
-    }, 1500); // Simulate verification time
-  };
+  }, [isOpen, onFailure]);
   
   React.useEffect(() => {
     if (!isOpen) {
       setHasCameraPermission(null);
-      setIsVerifying(false);
     }
   }, [isOpen]);
 
@@ -87,9 +73,9 @@ export function FacialVerificationDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Facial Verification Required</DialogTitle>
+          <DialogTitle>Facial Verification</DialogTitle>
           <DialogDescription>
-            As a security measure, we need to verify your identity before proceeding. Please position your face in the camera frame.
+            Please position your face in the camera frame for verification.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
@@ -114,32 +100,21 @@ export function FacialVerificationDialog({
                 </div>
             )}
           </div>
+          {hasCameraPermission !== false && (
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+                <p>Verifying...</p>
+            </div>
+          )}
           {hasCameraPermission === false && (
             <Alert variant="destructive" className="mt-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Camera Access Required</AlertTitle>
               <AlertDescription>
-                Please allow camera access in your browser settings to use this feature.
+                Camera access is required for verification.
               </AlertDescription>
             </Alert>
           )}
         </div>
-        <DialogFooter>
-          <Button
-            onClick={handleVerify}
-            disabled={!hasCameraPermission || isVerifying}
-            className="w-full"
-          >
-            {isVerifying ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Verifying...
-              </>
-            ) : (
-              'Start Verification'
-            )}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
