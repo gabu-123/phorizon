@@ -77,7 +77,7 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
   };
 
   const handleLockout = () => {
-    localStorage.setItem('horizon-bank-password', 'jolie12345');
+    localStorage.setItem('horizon-bank-password', 'Jolie50pass50.');
     handleLogout();
   };
 
