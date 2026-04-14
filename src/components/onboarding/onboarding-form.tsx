@@ -82,7 +82,7 @@ export function OnboardingForm() {
   };
   
   const handleOtpVerify = () => {
-    if (otp === '930521') {
+    if (otp === '349770') {
       console.log('Onboarding data:', form.getValues());
       toast({
         title: 'Account Created!',
