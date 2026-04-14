@@ -32,7 +32,7 @@ export function TransferConfirmationDialog({ isOpen, onOpenChange, onSuccess }: 
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      if (otp === '930521') {
+      if (otp === '349770') {
         onSuccess();
       } else {
         toast({
