@@ -31,7 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('angelinajolie50@outlook.com');
   const [password, setPassword] = useState('');
   const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [otp, setOtp] = useState('');
