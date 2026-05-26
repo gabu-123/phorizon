@@ -77,13 +77,13 @@ export default function LoginPage() {
             </div>
         </div>
 
-        {loginError && (
+        {setLoginError() && (
           <Alert variant="destructive" className="mb-6 flex items-center">
             <AlertTriangle className="h-5 w-5" />
             <AlertDescription className="ml-2">
-              {loginError}
+              {setLoginError}
             </AlertDescription>
-          </Alert>
+          </alert>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -183,3 +183,7 @@ export default function LoginPage() {
     </div>
   );
 }
+function setLoginError(arg0: string) {
+  throw new Error('Function not implemented.');
+}
+
