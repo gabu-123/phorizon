@@ -60,6 +60,10 @@ export default function LoginPage() {
     setPassword('');
   };
 
+  function handleOtpVerify(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-white p-4">
       <div className="w-full max-w-sm">
