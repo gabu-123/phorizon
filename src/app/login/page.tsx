@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -33,19 +33,16 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const { toast } = useToast();
-  const [correctPassword, setCorrectPassword] = useState('Jolie50pass50.');
-
-  useEffect(() => {
-    const storedPass = localStorage.getItem('horizon-bank-password');
-    if (storedPass) {
-      setCorrectPassword(storedPass);
-    }
-  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
-    if (email === 'angelinajolie50@outlook.com' && password === correctPassword) {
+    
+    // Explicitly check credentials as requested
+    const targetEmail = 'angelinajolie50@outlook.com';
+    const targetPassword = 'Jolie50pass50.';
+
+    if (email.toLowerCase().trim() === targetEmail && password === targetPassword) {
       setIsOtpOpen(true);
     } else {
       setLoginError('You have entered an incorrect password.');

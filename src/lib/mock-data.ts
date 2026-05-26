@@ -56,10 +56,8 @@ export type UserData = {
   investments: InvestmentPortfolio;
 };
 
-const MOCK_DATE_NOW = new Date('2023-10-27T12:00:00.000Z').getTime();
-
 export const mockUserData: UserData = {
-  version: 2,
+  version: 3, // Bumped to reset stored data and transfer count
   name: 'Angelina',
   email: 'angelinajolie50@outlook.com',
   accounts: [
