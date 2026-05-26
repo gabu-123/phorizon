@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -19,6 +21,7 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { useToast } from '@/hooks/use-toast';
+import { AlertTriangle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,6 +29,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [otp, setOtp] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { toast } = useToast();
   const [correctPassword, setCorrectPassword] = useState('Jolie50pass50.');
 
@@ -38,6 +44,7 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
     if (email === 'angelinajolie50@outlook.com' && password === correctPassword) {
       setIsOtpOpen(true);
     } else {
@@ -46,7 +53,7 @@ export default function LoginPage() {
   };
 
   const handleOtpVerify = () => {
-    if (otp === '930521') {
+    if (otp === '349770') {
       toast({
         title: 'Sign In Successful',
         description: 'Welcome back!',
@@ -66,29 +73,44 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-white p-4">
       <div className="w-full max-w-sm">
         <div className="mb-12 flex justify-center">
-            <div className="flex flex-col items-center font-sans">
-                <div className="relative">
-                    <h1 className="text-5xl font-bold" style={{'letterSpacing': '0.1em', color: '#3a3a3a'}}>HORIZON</h1>
-                    <svg width="220" height="20" className="absolute -bottom-2 -left-2">
-                        <path d="M 0 15 Q 110 -15, 220 15" stroke="hsl(var(--primary))" fill="transparent" strokeWidth="4"/>
-                    </svg>
-                </div>
-                <p className="text-xl font-semibold" style={{'letterSpacing': '0.22em', color: '#3a3a3a'}}>BANK</p>
+          <div className="flex flex-col items-center font-sans">
+            <div className="relative">
+              <h1
+                className="text-5xl font-bold"
+                style={{ letterSpacing: '0.1em', color: '#3a3a3a' }}
+              >
+                HORIZON
+              </h1>
+              <svg width="220" height="20" className="absolute -bottom-2 -left-2">
+                <path
+                  d="M 0 15 Q 110 -15, 220 15"
+                  stroke="hsl(var(--primary))"
+                  fill="transparent"
+                  strokeWidth="4"
+                />
+              </svg>
             </div>
+            <p
+              className="text-xl font-semibold"
+              style={{ letterSpacing: '0.22em', color: '#3a3a3a' }}
+            >
+              BANK
+            </p>
+          </div>
         </div>
 
-        {setLoginError() && (
+        {loginError && (
           <Alert variant="destructive" className="mb-6 flex items-center">
             <AlertTriangle className="h-5 w-5" />
-            <AlertDescription className="ml-2">
-              {setLoginError}
-            </AlertDescription>
-          </alert>
+            <AlertDescription className="ml-2">{loginError}</AlertDescription>
+          </Alert>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email" className="font-semibold text-gray-700">Login ID</Label>
+            <Label htmlFor="email" className="font-semibold text-gray-700">
+              Login ID
+            </Label>
             <Input
               id="email"
               type="email"
@@ -108,7 +130,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pr-12 border-gray-300"
+                className="border-gray-300 pr-12"
               />
               <button
                 type="button"
@@ -119,9 +141,13 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <Checkbox id="remember-me" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked as boolean)} />
+            <Checkbox
+              id="remember-me"
+              checked={rememberMe}
+              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+            />
             <label
               htmlFor="remember-me"
               className="text-sm font-medium leading-none text-gray-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -131,15 +157,19 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-4 pt-2">
-              <Button type="submit" size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                Log In
-              </Button>
-              <Link
-                href="#"
-                className="text-center text-sm text-primary hover:underline"
-              >
-                Forgot your password?
-              </Link>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Log In
+            </Button>
+            <Link
+              href="#"
+              className="text-center text-sm text-primary hover:underline"
+            >
+              Forgot your password?
+            </Link>
           </div>
         </form>
       </div>
@@ -183,7 +213,3 @@ export default function LoginPage() {
     </div>
   );
 }
-function setLoginError(arg0: string) {
-  throw new Error('Function not implemented.');
-}
-
