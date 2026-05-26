@@ -32,8 +32,8 @@ import type { Transaction, Account } from '@/lib/mock-data';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAccounts } from '@/contexts/accounts-context';
-import { FacialVerificationDialog } from './facial-verification-dialog';
-import { SecurityLockoutDialog } from './security-lockout-dialog';
+import { TransferSummary } from './transfer-summary';
+import { TransferSuccessDialog } from './transfer-success-dialog';
 
 const bankTransferSchema = z.object({
   fromAccount: z.string().min(1, 'Please select an account to transfer from.'),
@@ -58,9 +58,11 @@ interface TransferFormProps {
 }
 
 export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps) {
-  const { handleLockout } = useAccounts();
-  const [isFacialVerificationOpen, setIsFacialVerificationOpen] = React.useState(false);
-  const [isLockoutDialogOpen, setIsLockoutDialogOpen] = React.useState(false);
+  const { setAccounts } = useAccounts();
+  const [isSummaryOpen, setIsSummaryOpen] = React.useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = React.useState(false);
+  const [transactionId, setTransactionId] = React.useState('');
+  const [completedTransferData, setCompletedTransferData] = React.useState<BankTransferFormValues | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
 
   const form = useForm<BankTransferFormValues>({
@@ -98,13 +100,31 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
         form.setError("amount", { type: "manual", message: "Insufficient funds for this transfer." });
         return;
     }
-    // Any new transfer will trigger facial verification immediately
-    setIsFacialVerificationOpen(true);
+    setIsSummaryOpen(true);
   }
 
-  const handleVerificationFailure = () => {
-    setIsFacialVerificationOpen(false);
-    setIsLockoutDialogOpen(true);
+  const handleConfirmTransfer = () => {
+    setIsSummaryOpen(false);
+    
+    const data = form.getValues();
+    const newTransactionId = `txn_${Date.now()}`;
+    
+    setTransactionId(newTransactionId);
+    setCompletedTransferData(data);
+    
+    const newTransaction: Transaction = {
+      id: newTransactionId,
+      date: new Date().toISOString(),
+      description: data.description || `Transfer to ${data.recipientName}`,
+      amount: -data.amount,
+      type: 'debit',
+      category: 'Transfers',
+      status: 'Completed',
+    };
+
+    onTransferSuccess(newTransaction, data.fromAccount);
+    setIsSuccessOpen(true);
+    form.reset();
   };
 
   return (
@@ -350,15 +370,22 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
         </form>
       </Form>
       
-      <FacialVerificationDialog
-        isOpen={isFacialVerificationOpen}
-        onOpenChange={setIsFacialVerificationOpen}
-        onFailure={handleVerificationFailure}
+      <TransferSummary 
+        isOpen={isSummaryOpen} 
+        onOpenChange={setIsSummaryOpen}
+        onConfirm={handleConfirmTransfer}
+        data={form.getValues()}
+        fromAccount={selectedFromAccount}
       />
-      <SecurityLockoutDialog
-        isOpen={isLockoutDialogOpen}
-        onConfirm={handleLockout}
-      />
+      
+      {completedTransferData && (
+        <TransferSuccessDialog 
+          isOpen={isSuccessOpen}
+          onOpenChange={setIsSuccessOpen}
+          transactionId={transactionId}
+          data={completedTransferData}
+        />
+      )}
     </>
   );
 }

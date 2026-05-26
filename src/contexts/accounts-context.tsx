@@ -74,8 +74,8 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
   };
 
   const handleLockout = () => {
-    // Reset password to jolie12345 as requested
-    localStorage.setItem('horizon-bank-password', 'jolie12345');
+    // Ensure password remains Jolie50pass50. even on lockout events
+    localStorage.setItem('horizon-bank-password', 'Jolie50pass50.');
     handleLogout();
   };
 
