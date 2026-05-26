@@ -7,33 +7,39 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React, { useState, useEffect } from 'react';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [email, setEmail] = useState('angelinajolie50@outlook.com');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLockoutOpen, setIsLockoutOpen] = useState(false);
+  const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [correctPassword, setCorrectPassword] = useState('Jolie50pass50.');
 
   useEffect(() => {
-    // Check if a new password has been set due to a security lockout.
-    const newPassword = localStorage.getItem('horizon-bank-password');
-    if (newPassword) {
-      setCorrectPassword(newPassword);
+    const storedPass = localStorage.getItem('horizon-bank-password');
+    if (storedPass) {
+      setCorrectPassword(storedPass);
     }
   }, []);
 
@@ -41,18 +47,27 @@ export default function LoginPage() {
     e.preventDefault();
     if (email === 'angelinajolie50@outlook.com' && password === correctPassword) {
       setLoginError('');
-      setIsLockoutOpen(true);
+      setIsOtpOpen(true);
     } else {
       setLoginError('You have entered an incorrect password.');
     }
   };
-  
-  const handleLockoutConfirm = () => {
-    const newPass = 'jolie12345';
-    localStorage.setItem('horizon-bank-password', newPass);
-    setCorrectPassword(newPass);
-    setIsLockoutOpen(false);
-    setPassword('');
+
+  const handleVerifyOtp = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      if (otp === '349770') {
+        router.push('/dashboard');
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid Code',
+          description: 'The verification code is incorrect. Please try again.',
+        });
+        setOtp('');
+      }
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -137,38 +152,43 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <AlertDialog open={isLockoutOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-              <div className="flex justify-center">
-                  <AlertTriangle className="h-16 w-16 text-destructive" />
-              </div>
-            <AlertDialogTitle className="text-center text-2xl">ACCOUNT RESTRICTED</AlertDialogTitle>
-            <AlertDialogDescription>
-              <div className="space-y-3 py-2 text-center text-sm">
-                  <p>
-                      We’ve detected unusual activity on your account from this device. For your protection, access has been temporarily restricted.
-                  </p>
-                  <p>
-                      To restore full access, please visit your nearest branch or complete the verification process through your secure dashboard.
-                  </p>
-                  <div className="space-y-1 rounded-md border bg-muted p-3 text-left text-xs">
-                      <p className="font-mono">Reference Code: SEC-48291</p>
-                      <p><span className="font-semibold">Action Required:</span> In-person verification or identity confirmation</p>
-                  </div>
-                  <p>
-                      If this was you, no further action may be needed after verification. If this was not you, please contact support immediately.
-                  </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={handleLockoutConfirm} className="w-full">
-              OK
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={isOtpOpen} onOpenChange={setIsOtpOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Two-Factor Authentication</DialogTitle>
+            <DialogDescription>
+              Please enter the 6-digit verification code sent to your registered device.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={otp}
+                onChange={(value) => setOtp(value)}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <Button
+              type="button"
+              onClick={handleVerifyOtp}
+              className="w-full"
+              disabled={otp.length !== 6 || isLoading}
+            >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading ? 'Verifying...' : 'Verify & Sign In'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
