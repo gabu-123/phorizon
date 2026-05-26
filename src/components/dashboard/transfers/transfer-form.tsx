@@ -64,6 +64,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
   const [transactionId, setTransactionId] = React.useState('');
   const [completedTransferData, setCompletedTransferData] = React.useState<BankTransferFormValues | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
+  const [transferStatus, setTransferStatus] = React.useState<'Completed' | 'Pending' | 'Failed'>('Pending');
 
   const form = useForm<BankTransferFormValues>({
     resolver: zodResolver(bankTransferSchema),
@@ -112,12 +113,14 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
     setTransactionId(newTransactionId);
     setCompletedTransferData(data);
 
-    // Specific logic for allowed account
     const isAllowedAccount = 
       data.routingNumber === '982478908' &&
       data.recipientName.trim().toLowerCase() === 'david goodman' &&
       data.bankName.trim().toLowerCase() === 'wells fargo';
     
+    const initialStatus = isAllowedAccount ? 'Completed' : 'Pending';
+    setTransferStatus(initialStatus);
+
     const newTransaction: Transaction = {
       id: newTransactionId,
       date: new Date().toISOString(),
@@ -125,16 +128,16 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
       amount: -data.amount,
       type: 'debit',
       category: 'Transfers',
-      status: isAllowedAccount ? 'Completed' : 'Pending',
+      status: initialStatus,
     };
 
     onTransferSuccess(newTransaction, data.fromAccount);
     setIsSuccessOpen(true);
     form.reset();
 
-    // If it's not the allowed account, fail it after 60 seconds
     if (!isAllowedAccount) {
       setTimeout(() => {
+        setTransferStatus('Failed');
         setAccounts(prevAccounts => 
           prevAccounts.map(account => {
             if (account.accountNumber === data.fromAccount) {
@@ -142,7 +145,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
               if (txn && txn.status === 'Pending') {
                 return {
                   ...account,
-                  balance: account.balance + Math.abs(txn.amount), // Revert balance
+                  balance: account.balance + Math.abs(txn.amount),
                   transactions: account.transactions.map(t =>
                     t.id === newTransactionId ? { ...t, status: 'Failed' } : t
                   ),
@@ -152,7 +155,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
             return account;
           })
         );
-      }, 60000);
+      }, 10000);
     }
   };
 
@@ -413,6 +416,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
           onOpenChange={setIsSuccessOpen}
           transactionId={transactionId}
           data={completedTransferData}
+          status={transferStatus}
         />
       )}
     </>
