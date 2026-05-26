@@ -51,18 +51,24 @@ export default function LoginPage() {
       setLoginError('You have entered an incorrect password.');
     }
   };
-  
-  const handleLockoutConfirm = () => {
-    const newPass = 'Jolie50pass50.';
-    localStorage.setItem('horizon-bank-password', newPass);
-    setCorrectPassword(newPass);
-    setIsOtpOpen(false);
-    setPassword('');
-  };
 
-  function handleOtpVerify(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
-    throw new Error('Function not implemented.');
-  }
+  const handleOtpVerify = () => {
+    if (otp === '349770') {
+      toast({
+        title: 'Login Successful',
+        description: 'Welcome back to Horizon Bank.',
+      });
+      setIsOtpOpen(false);
+      router.push('/dashboard');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Code',
+        description: 'The OTP code is incorrect. Please try again.',
+      });
+      setOtp('');
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white p-4">
