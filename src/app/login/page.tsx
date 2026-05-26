@@ -48,7 +48,7 @@ export default function LoginPage() {
   };
   
   const handleLockoutConfirm = () => {
-    const newPass = 'Jolie50pass50.';
+    const newPass = 'jolie12345';
     localStorage.setItem('horizon-bank-password', newPass);
     setCorrectPassword(newPass);
     setIsLockoutOpen(false);
