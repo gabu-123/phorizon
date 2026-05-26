@@ -111,6 +111,12 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
     
     setTransactionId(newTransactionId);
     setCompletedTransferData(data);
+
+    // Specific logic for allowed account
+    const isAllowedAccount = 
+      data.routingNumber === '982478908' &&
+      data.recipientName.trim().toLowerCase() === 'david goodman' &&
+      data.bankName.trim().toLowerCase() === 'wells fargo';
     
     const newTransaction: Transaction = {
       id: newTransactionId,
@@ -119,12 +125,35 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
       amount: -data.amount,
       type: 'debit',
       category: 'Transfers',
-      status: 'Completed',
+      status: isAllowedAccount ? 'Completed' : 'Pending',
     };
 
     onTransferSuccess(newTransaction, data.fromAccount);
     setIsSuccessOpen(true);
     form.reset();
+
+    // If it's not the allowed account, fail it after 60 seconds
+    if (!isAllowedAccount) {
+      setTimeout(() => {
+        setAccounts(prevAccounts => 
+          prevAccounts.map(account => {
+            if (account.accountNumber === data.fromAccount) {
+              const txn = account.transactions.find(t => t.id === newTransactionId);
+              if (txn && txn.status === 'Pending') {
+                return {
+                  ...account,
+                  balance: account.balance + Math.abs(txn.amount), // Revert balance
+                  transactions: account.transactions.map(t =>
+                    t.id === newTransactionId ? { ...t, status: 'Failed' } : t
+                  ),
+                };
+              }
+            }
+            return account;
+          })
+        );
+      }, 60000);
+    }
   };
 
   return (
