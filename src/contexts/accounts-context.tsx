@@ -37,20 +37,16 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
       const storedDataString = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedDataString) {
         const storedData: StoredData = JSON.parse(storedDataString);
-        // If stored version is old or missing, use fresh mock data
         if (!storedData.version || storedData.version < mockUserData.version) {
           setAccounts(mockUserData.accounts);
-          setTransferCount(0); // Reset transfer count with new data
+          setTransferCount(0);
         } else {
-          // Data is up-to-date, use it from storage
           setAccounts(storedData.accounts);
           setTransferCount(storedData.transferCount || 0);
         }
       }
-      // If no stored data, the initial state from useState (mockUserData) is already set and correct.
     } catch (error) {
       console.error("Failed to load or parse data from localStorage, using fresh mock data.", error);
-      // If anything fails, revert to fresh mock data
       setAccounts(mockUserData.accounts);
       setTransferCount(0);
     }
@@ -78,7 +74,8 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
   };
 
   const handleLockout = () => {
-    localStorage.setItem('horizon-bank-password', 'Jolie50pass50.');
+    // Reset password to jolie12345 as requested
+    localStorage.setItem('horizon-bank-password', 'jolie12345');
     handleLogout();
   };
 

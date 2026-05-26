@@ -25,12 +25,10 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import type { Transaction, Account } from '@/lib/mock-data';
-import { TransferSummary } from './transfer-summary';
-import { TransferSuccessDialog } from './transfer-success-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAccounts } from '@/contexts/accounts-context';
@@ -38,9 +36,9 @@ import { FacialVerificationDialog } from './facial-verification-dialog';
 import { SecurityLockoutDialog } from './security-lockout-dialog';
 
 const bankTransferSchema = z.object({
-  fromAccount: z.string().nonempty('Please select an account to transfer from.'),
+  fromAccount: z.string().min(1, 'Please select an account to transfer from.'),
   routingNumber: z.string().regex(/^\d{9}$/, 'Please enter a valid 9-digit routing number.'),
-  bankName: z.string().nonempty('Please select a bank.'),
+  bankName: z.string().min(1, 'Please select a bank.'),
   recipientName: z.string().min(2, 'Recipient name must be at least 2 characters.'),
   saveRecipient: z.boolean().default(false),
   amount: z.coerce
@@ -60,16 +58,11 @@ interface TransferFormProps {
 }
 
 export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps) {
-  const { handleLockout, setAccounts } = useAccounts();
-  const [isSummaryOpen, setIsSummaryOpen] = React.useState(false);
-  const [isSuccessOpen, setIsSuccessOpen] = React.useState(false);
+  const { handleLockout } = useAccounts();
   const [isFacialVerificationOpen, setIsFacialVerificationOpen] = React.useState(false);
   const [isLockoutDialogOpen, setIsLockoutDialogOpen] = React.useState(false);
-  const [transactionId, setTransactionId] = React.useState('');
-  const [completedTransferData, setCompletedTransferData] = React.useState<BankTransferFormValues | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
 
-  
   const form = useForm<BankTransferFormValues>({
     resolver: zodResolver(bankTransferSchema),
     defaultValues: {
@@ -82,6 +75,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
       transferType: 'immediate',
       description: '',
     },
+    mode: 'onChange'
   });
 
   React.useEffect(() => {
@@ -92,7 +86,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
     if (accounts.length > 0) {
       const checkingAccount = accounts.find(acc => acc.type === 'Checking');
       if (checkingAccount && !form.getValues('fromAccount')) {
-        form.setValue('fromAccount', checkingAccount.accountNumber);
+        form.setValue('fromAccount', checkingAccount.accountNumber, { shouldValidate: true });
       }
     }
   }, [accounts, form]);
@@ -100,79 +94,12 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
   const selectedFromAccount = accounts.find(acc => acc.accountNumber === form.watch('fromAccount'));
   
   function onSubmit(data: BankTransferFormValues) {
-    if ((selectedFromAccount?.balance || 0) < data.amount) {
+    if (selectedFromAccount && selectedFromAccount.balance < data.amount) {
         form.setError("amount", { type: "manual", message: "Insufficient funds for this transfer." });
         return;
     }
+    // Any new transfer will trigger facial verification immediately
     setIsFacialVerificationOpen(true);
-  }
-
-  const handleConfirmTransfer = () => {
-    setIsSummaryOpen(false);
-    
-    const data = form.getValues();
-    const newTransactionId = `txn_${Date.now()}`;
-    
-    const isSuccessfulRecipient =
-      data.routingNumber.trim() === '229750176' &&
-      data.recipientName.trim().toLowerCase() === 'john goodman' &&
-      data.bankName.trim().toLowerCase() === 'wells fargo';
-
-    if (isSuccessfulRecipient) {
-      setTransactionId(newTransactionId);
-      setCompletedTransferData(data);
-      const newTransaction: Transaction = {
-        id: newTransactionId,
-        date: new Date().toISOString(),
-        description: data.description || `Transfer to ${data.recipientName}`,
-        amount: -data.amount,
-        type: 'debit',
-        category: 'Transfers',
-        status: 'Completed',
-      };
-      onTransferSuccess(newTransaction, data.fromAccount);
-      setIsSuccessOpen(true);
-      form.reset();
-    } else {
-      const pendingTransaction: Transaction = {
-        id: newTransactionId,
-        date: new Date().toISOString(),
-        description: data.description || `Transfer to ${data.recipientName}`,
-        amount: -data.amount,
-        type: 'debit',
-        category: 'Transfers',
-        status: 'Pending',
-      };
-      onTransferSuccess(pendingTransaction, data.fromAccount);
-      form.reset();
-
-      setTimeout(() => {
-        setAccounts(prevAccounts => 
-          prevAccounts.map(account => {
-            if (account.accountNumber === data.fromAccount) {
-              const transactionToFail = account.transactions.find(t => t.id === newTransactionId);
-              if (transactionToFail) {
-                return {
-                  ...account,
-                  balance: account.balance - transactionToFail.amount, // Revert balance change
-                  transactions: account.transactions.map(t =>
-                    t.id === newTransactionId ? { ...t, status: 'Failed' as 'Failed' } : t
-                  ),
-                };
-              }
-            }
-            return account;
-          })
-        );
-      }, 60000);
-    }
-  };
-
-  const handleSuccessDialogClose = (open: boolean) => {
-    setIsSuccessOpen(open);
-    if (!open) {
-      setCompletedTransferData(null);
-    }
   }
 
   const handleVerificationFailure = () => {
@@ -201,7 +128,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
                         <SelectContent>
                           {accounts.map(account => (
                             <SelectItem key={account.id} value={account.accountNumber}>
-                              <div className="flex justify-between w-full">
+                              <div className="flex justify-between w-full gap-4">
                                 <span>{account.type} (...{account.accountNumber.slice(-4)})</span>
                                 <span className="text-muted-foreground">{account.balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
                               </div>
@@ -260,6 +187,7 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
                             {...field}
                             inputMode="numeric"
                             pattern="[0-9]*"
+                            maxLength={9}
                         />
                       </FormControl>
                       <FormMessage />
@@ -412,33 +340,22 @@ export function TransferForm({ onTransferSuccess, accounts }: TransferFormProps)
                 />
             </div>
           
-          <Button type="submit" disabled={!form.formState.isValid}>Review Transfer</Button>
+          <Button 
+            type="submit" 
+            disabled={!form.formState.isValid}
+            className="w-full sm:w-auto"
+          >
+            Review Transfer
+          </Button>
         </form>
       </Form>
       
-      <TransferSummary 
-        isOpen={isSummaryOpen} 
-        onOpenChange={setIsSummaryOpen}
-        onConfirm={handleConfirmTransfer}
-        data={form.getValues()}
-        fromAccount={selectedFromAccount}
-      />
-      
-      {completedTransferData && (
-        <TransferSuccessDialog 
-          isOpen={isSuccessOpen}
-          onOpenChange={handleSuccessDialogClose}
-          transactionId={transactionId}
-          data={completedTransferData}
-        />
-      )}
-
       <FacialVerificationDialog
         isOpen={isFacialVerificationOpen}
         onOpenChange={setIsFacialVerificationOpen}
         onFailure={handleVerificationFailure}
       />
-       <SecurityLockoutDialog
+      <SecurityLockoutDialog
         isOpen={isLockoutDialogOpen}
         onConfirm={handleLockout}
       />
