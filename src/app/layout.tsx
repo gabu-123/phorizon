@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
       <head />
-      <body className={cn('antialiased')}>
+      <body className={cn('antialiased')} suppressHydrationWarning>
         {children}
         <Toaster />
       </body>

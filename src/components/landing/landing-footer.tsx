@@ -31,7 +31,7 @@ const footerNavigation = {
 };
 
 export function LandingFooter() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -119,7 +119,7 @@ export function LandingFooter() {
         </div>
         <div className="mt-16 border-t pt-8">
           <p className="text-center text-xs leading-5 text-muted-foreground">
-            &copy; {year} Horizon Bank. All rights reserved.
+            &copy; {year || 2024} Horizon Bank. All rights reserved.
           </p>
         </div>
       </div>

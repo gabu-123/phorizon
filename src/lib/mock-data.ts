@@ -61,7 +61,7 @@ const MOCK_DATE_NOW = new Date('2023-10-27T12:00:00.000Z').getTime();
 export const mockUserData: UserData = {
   version: 2,
   name: 'Angelina',
-  email: 'angelina.jolie@example.com',
+  email: 'angelinajolie50@outlook.com',
   accounts: [
     {
       id: 'acc_chk_1',
