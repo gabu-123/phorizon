@@ -17,23 +17,16 @@ import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Loader2 } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+} from '@/components/ui/input-otp';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const [email, setEmail] = useState('angelinajolie50@outlook.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isOtpOpen, setIsOtpOpen] = useState(false);
-  const [loginError, setLoginError] = useState('');
   const [otp, setOtp] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const [correctPassword, setCorrectPassword] = useState('Jolie50pass50.');
 
   useEffect(() => {
@@ -46,28 +39,27 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email === 'angelinajolie50@outlook.com' && password === correctPassword) {
-      setLoginError('');
       setIsOtpOpen(true);
     } else {
       setLoginError('You have entered an incorrect password.');
     }
   };
 
-  const handleVerifyOtp = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      if (otp === '349770') {
-        router.push('/dashboard');
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid Code',
-          description: 'The verification code is incorrect. Please try again.',
-        });
-        setOtp('');
-      }
-      setIsLoading(false);
-    }, 1000);
+  const handleOtpVerify = () => {
+    if (otp === '930521') {
+      toast({
+        title: 'Sign In Successful',
+        description: 'Welcome back!',
+      });
+      router.push('/dashboard');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Code',
+        description: 'The verification code is incorrect. Please try again.',
+      });
+      setOtp('');
+    }
   };
 
   return (
@@ -155,9 +147,9 @@ export default function LoginPage() {
       <Dialog open={isOtpOpen} onOpenChange={setIsOtpOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Two-Factor Authentication</DialogTitle>
+            <DialogTitle>Enter OTP Code</DialogTitle>
             <DialogDescription>
-              Please enter the 6-digit verification code sent to your registered device.
+              We have sent an OTP code to your email. Please enter the code
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
@@ -179,12 +171,11 @@ export default function LoginPage() {
             </div>
             <Button
               type="button"
-              onClick={handleVerifyOtp}
+              onClick={handleOtpVerify}
               className="w-full"
-              disabled={otp.length !== 6 || isLoading}
+              disabled={otp.length !== 6}
             >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Verifying...' : 'Verify & Sign In'}
+              Verify & Sign In
             </Button>
           </div>
         </DialogContent>
